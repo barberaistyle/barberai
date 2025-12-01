@@ -61,8 +61,7 @@ const App: React.FC = () => {
 
     } catch (err: any) {
       console.error("Generation failed:", err);
-      // Show the actual error message from the service
-      setError(err.message || "Failed to generate hairstyle. Please try again or use a different photo.");
+      setError(err.message || "Failed to generate hairstyle. Please try again.");
       setCurrentStep(AppStep.SELECT_STYLE);
     }
   };
@@ -76,14 +75,27 @@ const App: React.FC = () => {
       <main className="container mx-auto px-4 py-8 relative z-0">
         
         {error && (
-          <div className="max-w-xl mx-auto mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-red-200">
-             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mt-0.5 shrink-0">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-            </svg>
-            <div>
-              <p className="font-semibold">Error</p>
-              <p className="text-sm opacity-90">{error}</p>
+          <div className="max-w-2xl mx-auto mb-6 p-4 bg-red-900/40 border border-red-500/50 rounded-xl flex flex-col md:flex-row items-start gap-4 text-red-100 shadow-lg">
+             <div className="p-2 bg-red-500/20 rounded-full shrink-0">
+               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-red-400">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              </svg>
+             </div>
+            <div className="flex-1">
+              <p className="font-bold text-lg text-white mb-1">Generation Failed</p>
+              <p className="text-sm opacity-90 leading-relaxed">{error}</p>
+              {error.includes("Netlify") && (
+                <div className="mt-3 p-3 bg-black/30 rounded-lg text-xs font-mono border border-white/10">
+                  Tip: Go to Netlify Dashboard &gt; Deploys &gt; Trigger Deploy &gt; Clear cache and deploy site.
+                </div>
+              )}
             </div>
+            <button 
+              onClick={() => setError(null)}
+              className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-xs font-medium transition-colors"
+            >
+              Dismiss
+            </button>
           </div>
         )}
 
