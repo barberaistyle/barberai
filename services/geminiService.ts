@@ -2,15 +2,18 @@ import { GoogleGenAI } from "@google/genai";
 
 const getAiClient = () => {
   const apiKey = process.env.API_KEY;
+  
+  // Debug log (masked) to verify key presence in production
+  if (apiKey) {
+    console.log("API Key present:", apiKey.substring(0, 4) + "...");
+  } else {
+    console.error("API Key is MISSING in environment variables");
+  }
+
   if (!apiKey) {
-    throw new Error("API Key not found in environment variables.");
+    throw new Error("API Key is missing. Please check your Netlify Environment Variables.");
   }
   return new GoogleGenAI({ apiKey });
-};
-
-// Helper to strip the data:image/...;base64, prefix
-const stripBase64Prefix = (base64Str: string): string => {
-  return base64Str.replace(/^data:image\/[a-z]+;base64,/, "");
 };
 
 export const generateNewHairstyle = async (
@@ -20,10 +23,18 @@ export const generateNewHairstyle = async (
 ): Promise<string> => {
   try {
     const ai = getAiClient();
-    const cleanBase64 = stripBase64Prefix(base64Image);
+    
+    // 1. Detect the actual MIME type from the base64 header
+    // Example header: data:image/png;base64,
+    const mimeMatch = base64Image.match(/^data:(image\/[a-z]+);base64,/i);
+    const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+
+    // 2. Clean the base64 string
+    const cleanBase64 = base64Image.replace(/^data:image\/[a-z]+;base64,/i, "");
+
+    console.log(`Generating with model: gemini-2.5-flash-image, Mime: ${mimeType}`);
 
     // Using gemini-2.5-flash-image for image editing capabilities
-    // It supports text + image prompts to modify the image.
     const model = 'gemini-2.5-flash-image';
 
     const prompt = `
@@ -42,7 +53,7 @@ export const generateNewHairstyle = async (
         parts: [
           {
             inlineData: {
-              mimeType: 'image/jpeg', // Assuming JPEG for simplicity, or we could detect
+              mimeType: mimeType,
               data: cleanBase64
             }
           },
@@ -75,15 +86,20 @@ export const generateNewHairstyle = async (
         // Check for text refusal
         const textPart = parts.find(p => p.text);
         if (textPart) {
-             throw new Error(`Model returned text instead of image: ${textPart.text}`);
+             console.error("Model refusal:", textPart.text);
+             throw new Error(`Model Refusal: ${textPart.text.substring(0, 100)}...`);
         }
         throw new Error("No image data found in response.");
     }
 
     return `data:image/png;base64,${resultImageBase64}`;
 
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    throw error;
+  } catch (error: any) {
+    console.error("Gemini API Error Full:", error);
+    // Return a more user-friendly error message if possible
+    if (error.message?.includes("API key")) {
+      throw new Error("Invalid API Key. Please check your settings.");
+    }
+    throw new Error(error.message || "Unknown error occurred during generation.");
   }
 };

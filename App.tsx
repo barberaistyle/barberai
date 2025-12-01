@@ -60,8 +60,9 @@ const App: React.FC = () => {
       setCurrentStep(AppStep.RESULT);
 
     } catch (err: any) {
-      console.error(err);
-      setError("Failed to generate hairstyle. Please try again or use a different photo.");
+      console.error("Generation failed:", err);
+      // Show the actual error message from the service
+      setError(err.message || "Failed to generate hairstyle. Please try again or use a different photo.");
       setCurrentStep(AppStep.SELECT_STYLE);
     }
   };
@@ -75,11 +76,14 @@ const App: React.FC = () => {
       <main className="container mx-auto px-4 py-8 relative z-0">
         
         {error && (
-          <div className="max-w-xl mx-auto mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-200">
-             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+          <div className="max-w-xl mx-auto mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-red-200">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mt-0.5 shrink-0">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
-            {error}
+            <div>
+              <p className="font-semibold">Error</p>
+              <p className="text-sm opacity-90">{error}</p>
+            </div>
           </div>
         )}
 
