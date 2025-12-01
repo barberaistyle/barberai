@@ -1,0 +1,7 @@
+{
+  "name": "BarberAI - Virtual Hairstyle Try-On",
+  "description": "Upload your photo and instantly try on different men's hairstyles using AI.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
